@@ -176,6 +176,13 @@ describe('App e2e test', () => {
           .expectStatus(HttpStatus.OK)
           .expectJsonSchema(userDtoCollectionSchema);
       });
+
+      it('should return unauthorized when auth header missing', () => {
+        return pactum
+          .spec()
+          .get('/users')
+          .expectStatus(HttpStatus.UNAUTHORIZED);
+      });
     });
 
     describe('GET /me', () => {
@@ -188,6 +195,13 @@ describe('App e2e test', () => {
           })
           .expectStatus(HttpStatus.OK)
           .expectJsonSchema(userDtoSchema);
+      });
+
+      it('should return unauthorized when auth header missing', () => {
+        return pactum
+          .spec()
+          .get('/users/me')
+          .expectStatus(HttpStatus.UNAUTHORIZED);
       });
     });
   });
