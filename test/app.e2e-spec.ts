@@ -11,6 +11,7 @@ import { AppModule } from 'src/app.module';
 import * as pactum from 'pactum';
 import { AuthDto } from 'src/auth/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Reflector } from '@nestjs/core';
 
 describe('App e2e test', () => {
   let app: INestApplication;
@@ -29,10 +30,17 @@ describe('App e2e test', () => {
     const vp = new ValidationPipe(vpOptitons);
     app.useGlobalPipes(vp);
 
+    const reflector = app.get(Reflector);
+    const csiOptions: ClassSerializerInterceptorOptions = {
+      excludeExtraneousValues: true,
+    };
+    const csi = new ClassSerializerInterceptor(reflector, csiOptions);
+    app.useGlobalInterceptors(csi);
+
     const prismaService = app.get(PrismaService);
     await prismaService.cleanDb();
 
-    pactum.request.setBaseUrl('http:/localhost:3333');
+    pactum.request.setBaseUrl('http://localhost:3333');
 
     await app.init();
     await app.listen(3333);
@@ -49,15 +57,14 @@ describe('App e2e test', () => {
     };
 
     describe('POST /register', () => {
-      it('should register new user', () => {
-        return pactum
+      it('should register new user', () =>
+        pactum
           .spec()
           .post('/auth/register')
           .withBody(authDto)
           .expectStatus(HttpStatus.CREATED)
           .expectJson('username', authDto.username)
-          .expectBodyContains('createdAt');
-      });
+          .expectBodyContains('createdAt'));
 
       it('should return bad request when username missing', () => {
         const { username, ...filteredDto } = authDto;
@@ -86,25 +93,23 @@ describe('App e2e test', () => {
           .expectStatus(HttpStatus.BAD_REQUEST);
       });
 
-      it('should return forbidden when username taken', () => {
-        return pactum
+      it('should return forbidden when username taken', () =>
+        pactum
           .spec()
           .post('/auth/register')
           .withBody(authDto)
-          .expectStatus(HttpStatus.FORBIDDEN);
-      });
+          .expectStatus(HttpStatus.FORBIDDEN));
     });
 
     describe('POST /login', () => {
-      it('should login', () => {
-        return pactum
+      it('should login', () =>
+        pactum
           .spec()
           .post('/auth/login')
           .withBody(authDto)
           .expectStatus(HttpStatus.OK)
           .expectBodyContains('access_token')
-          .stores('access_token', 'access_token');
-      });
+          .stores('access_token', 'access_token'));
 
       it('should return unauthorized when username missing', () => {
         const { username, ...filteredDto } = authDto;
@@ -140,6 +145,49 @@ describe('App e2e test', () => {
           .post('/auth/login')
           .withBody(invalidDto)
           .expectStatus(HttpStatus.UNAUTHORIZED);
+      });
+    });
+  });
+
+  describe('/users', () => {
+    const userDtoSchema = {
+      type: 'object',
+      required: ['id', 'username', 'createdAt'],
+      additionalProperties: false,
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        username: { type: 'string' },
+        createdAt: { type: 'string', format: 'date-time' },
+      },
+    };
+
+    describe('GET', () => {
+      it('should return all users', () => {
+        const userDtoCollectionSchema = {
+          type: 'array',
+          items: userDtoSchema,
+        };
+        return pactum
+          .spec()
+          .get('/users')
+          .withHeaders({
+            Authorization: 'Bearer $S{access_token}',
+          })
+          .expectStatus(HttpStatus.OK)
+          .expectJsonSchema(userDtoCollectionSchema);
+      });
+    });
+
+    describe('GET /me', () => {
+      it('should return current user information', () => {
+        return pactum
+          .spec()
+          .get('/users/me')
+          .withHeaders({
+            Authorization: 'Bearer $S{access_token}',
+          })
+          .expectStatus(HttpStatus.OK)
+          .expectJsonSchema(userDtoSchema);
       });
     });
   });
