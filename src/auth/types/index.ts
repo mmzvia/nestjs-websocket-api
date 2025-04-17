@@ -1,1 +1,2 @@
-export * from './auth.type.js';
+export * from './auth-user.type';
+export * from './jwt-payload.type';

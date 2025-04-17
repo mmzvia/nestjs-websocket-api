@@ -14,7 +14,13 @@ export class PrismaService extends PrismaClient {
     });
   }
 
-  async cleanDb(): Promise<[Prisma.BatchPayload]> {
-    return this.$transaction([this.user.deleteMany()]);
+  async cleanDb(): Promise<
+    [Prisma.BatchPayload, Prisma.BatchPayload, Prisma.BatchPayload]
+  > {
+    return this.$transaction([
+      this.chatMember.deleteMany(),
+      this.chat.deleteMany(),
+      this.user.deleteMany(),
+    ]);
   }
 }

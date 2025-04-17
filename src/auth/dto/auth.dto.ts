@@ -9,12 +9,3 @@ export class AuthDto {
   @IsNotEmpty()
   password: string;
 }
-
-export class RegisterResponseDto {
-  username: string;
-  createdAt: Date;
-}
-
-export class LoginResponseDto {
-  access_token: string;
-}
