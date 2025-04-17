@@ -6,11 +6,12 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "prisma:dev:migrate": "npm run db:dev:restart && sleep 1 && npx prisma migrate dev && npm run db:dev:stop",
     "prisma:dev:deploy": "npx prisma migrate deploy",
+    "prisma:test:deploy": "dotenv -e .env.test -- npx prisma migrate deploy",
     "db:dev:stop": "docker compose rm dev-db -s -f -v",
     "db:dev:start": "docker compose up dev-db -d && sleep 1 && npm run prisma:dev:deploy",
     "db:dev:restart": "npm run db:dev:stop && npm run db:dev:start",
-    "prisma:test:deploy": "dotenv -e .env.test -- npx prisma migrate deploy",
     "db:test:stop": "docker compose rm test-db -s -f -v",
     "db:test:start": "docker compose up test-db -d && sleep 1 && npm run prisma:test:deploy",
     "db:test:restart": "npm run db:test:stop && npm run db:test:start",
@@ -25,8 +26,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "pretest:e2e": "npm run db:test:restart",
-    "test:e2e": "dotenv -e .env.test -- jest --watch --no-cache --config ./test/jest-e2e.json"
+    "test:e2e": "npm run db:test:restart && dotenv -e .env.test -- jest --watch --no-cache --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
