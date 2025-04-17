@@ -12,6 +12,7 @@ export class AuthDto {
 
 export class RegisterResponseDto {
   username: string;
+  createdAt: Date;
 }
 
 export class LoginResponseDto {

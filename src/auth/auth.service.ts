@@ -15,14 +15,15 @@ export class AuthService {
   async register(authDto: AuthDto): Promise<RegisterResponseDto> {
     try {
       const hash = await argon.hash(authDto.password);
-      const user = await this.prismaService.user.create({
+      const registeredUser = await this.prismaService.user.create({
         data: {
           username: authDto.username,
           password: hash,
         },
       });
       const response: RegisterResponseDto = {
-        username: user.username,
+        username: registeredUser.username,
+        createdAt: registeredUser.createdAt,
       };
       return response;
     } catch (error) {

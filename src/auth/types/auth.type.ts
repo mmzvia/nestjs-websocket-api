@@ -1,8 +1,8 @@
 export interface JwtPayload {
-  sub: number;
+  sub: string;
 }
 
 export interface AuthUser {
-  id: number;
+  id: string;
   username: string;
 }
