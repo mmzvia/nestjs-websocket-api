@@ -1,10 +1,11 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthDto, RegisterResponseDto, LoginResponseDto } from './dto';
+import { AuthDto, LoginResponseDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload, AuthUser } from './types';
+import { UserDto } from 'src/users/dto';
 
 @Injectable()
 export class AuthService {
@@ -12,20 +13,16 @@ export class AuthService {
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
   ) {}
-  async register(authDto: AuthDto): Promise<RegisterResponseDto> {
+  async register(dto: AuthDto): Promise<UserDto> {
     try {
-      const hash = await argon.hash(authDto.password);
+      const hash = await argon.hash(dto.password);
       const registeredUser = await this.prismaService.user.create({
         data: {
-          username: authDto.username,
+          username: dto.username,
           password: hash,
         },
       });
-      const response: RegisterResponseDto = {
-        username: registeredUser.username,
-        createdAt: registeredUser.createdAt,
-      };
-      return response;
+      return registeredUser;
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&

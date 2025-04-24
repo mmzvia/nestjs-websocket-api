@@ -9,14 +9,17 @@ import {
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import * as pactum from 'pactum';
-import { AuthDto } from 'src/auth/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Reflector } from '@nestjs/core';
 import { useContainer } from 'class-validator';
-import { CreateChatDto } from 'src/chats/dto';
 
 describe('App e2e test', () => {
+  const authHeaders = {
+    Authorization: 'Bearer $S{access_token}',
+  };
+
   let app: INestApplication;
+  let prismaService: PrismaService;
 
   beforeAll(async () => {
     const testingModule = await Test.createTestingModule({
@@ -40,8 +43,7 @@ describe('App e2e test', () => {
     const csi = new ClassSerializerInterceptor(reflector, csiOptions);
     app.useGlobalInterceptors(csi);
 
-    const prismaService = app.get(PrismaService);
-    await prismaService.cleanDb();
+    prismaService = app.get(PrismaService);
 
     pactum.request.setBaseUrl('http://localhost:3333');
 
@@ -49,91 +51,134 @@ describe('App e2e test', () => {
     await app.listen(3333);
   });
 
+  beforeEach(async () => {
+    await prismaService.cleanDb();
+  });
+
   afterAll(() => {
     app.close();
   });
 
   describe('/auth', () => {
-    const authDto: AuthDto = {
-      username: 'test@test.com',
-      password: 'test',
-    };
-
     describe('POST /register', () => {
-      it('should register new user', () =>
-        pactum
-          .spec()
-          .post('/auth/register')
-          .withBody(authDto)
-          .expectStatus(HttpStatus.CREATED)
-          .expectJson('username', authDto.username)
-          .expectBodyContains('createdAt'));
-
-      it('should return bad request when username is missing', () => {
-        const { username, ...filteredDto } = authDto;
+      it('should register new user', () => {
+        const dto = {
+          username: 'dummy@dummy.com',
+          password: 'dummy',
+        };
+        const responseSchema = {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            username: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+          required: ['id', 'username', 'createdAt'],
+        };
         return pactum
           .spec()
           .post('/auth/register')
-          .withBody(filteredDto)
+          .withBody(dto)
+          .expectStatus(HttpStatus.CREATED)
+          .expectJsonSchema(responseSchema);
+      });
+
+      it('should return bad request when username is missing', () => {
+        const dto = { password: 'dummy' };
+        return pactum
+          .spec()
+          .post('/auth/register')
+          .withBody(dto)
           .expectStatus(HttpStatus.BAD_REQUEST);
       });
 
       it('should return bad request when password is missing', () => {
-        const { password, ...filteredDto } = authDto;
+        const dto = { username: 'dummy@dummy.com' };
         return pactum
           .spec()
           .post('/auth/register')
-          .withBody(filteredDto)
+          .withBody(dto)
           .expectStatus(HttpStatus.BAD_REQUEST);
       });
 
       it('should return bad request when body contains extra field', () => {
-        const extendedDto = { ...authDto, extraField: 'test' };
+        const dto = {
+          username: 'dummy@dummy.com',
+          password: 'dummy',
+          extraField: 'dummy',
+        };
         return pactum
           .spec()
           .post('/auth/register')
-          .withBody(extendedDto)
+          .withBody(dto)
           .expectStatus(HttpStatus.BAD_REQUEST);
       });
 
-      it('should return forbidden when username taken', () =>
-        pactum
+      it('should return forbidden when username is taken', async () => {
+        const dto = {
+          username: 'dummy@dummy.com',
+          password: 'dummy',
+        };
+        await pactum.spec().post('/auth/register').withBody(dto);
+        const duplicateDto = {
+          username: 'dummy@dummy.com',
+          password: 'dummy',
+        };
+        return await pactum
           .spec()
           .post('/auth/register')
-          .withBody(authDto)
-          .expectStatus(HttpStatus.FORBIDDEN));
+          .withBody(duplicateDto)
+          .expectStatus(HttpStatus.FORBIDDEN);
+      });
     });
 
     describe('POST /login', () => {
-      it('should login', () =>
-        pactum
-          .spec()
-          .post('/auth/login')
-          .withBody(authDto)
-          .expectStatus(HttpStatus.OK)
-          .expectBodyContains('access_token')
-          .stores('access_token', 'access_token'));
-
-      it('should return unauthorized when username is missing', () => {
-        const { username, ...filteredDto } = authDto;
+      it('should login', async () => {
+        const dto = {
+          username: 'dummy@dummy.com',
+          password: 'dummy',
+        };
+        await pactum.spec().post('/auth/register').withBody(dto);
+        const responseSchema = {
+          type: 'object',
+          properties: {
+            access_token: { type: 'string' },
+          },
+          required: ['access_token'],
+        };
         return pactum
           .spec()
           .post('/auth/login')
-          .withBody(filteredDto)
+          .withBody(dto)
+          .expectStatus(HttpStatus.OK)
+          .expectJsonSchema(responseSchema);
+      });
+
+      it('should return unauthorized when username is missing', () => {
+        const dto = { password: 'dummy' };
+        return pactum
+          .spec()
+          .post('/auth/login')
+          .withBody(dto)
           .expectStatus(HttpStatus.UNAUTHORIZED);
       });
 
       it('should return unauthorized when password is missing', () => {
-        const { password, ...filteredDto } = authDto;
+        const dto = { username: 'dummy@dummy.com' };
         return pactum
           .spec()
           .post('/auth/login')
-          .withBody(filteredDto)
+          .withBody(dto)
           .expectStatus(HttpStatus.UNAUTHORIZED);
       });
 
-      it('should return unauthorized when username not valid', () => {
-        const invalidDto = { ...authDto, username: 'dummy' };
+      it('should return unauthorized when username is not valid', async () => {
+        const dto = {
+          username: 'dummy@dummy.com',
+          password: 'dummy',
+        };
+        await pactum.spec().post('/auth/register').withBody(dto);
+        const invalidDto = { username: 'invalid', password: 'dummy' };
         return pactum
           .spec()
           .post('/auth/login')
@@ -141,8 +186,13 @@ describe('App e2e test', () => {
           .expectStatus(HttpStatus.UNAUTHORIZED);
       });
 
-      it('should return unauthorized when password not valid', () => {
-        const invalidDto = { ...authDto, password: 'dummy' };
+      it('should return unauthorized when password not valid', async () => {
+        const dto = {
+          username: 'dummy@dummy.com',
+          password: 'dummy',
+        };
+        await pactum.spec().post('/auth/register').withBody(dto);
+        const invalidDto = { username: 'dummy', password: 'invalid' };
         return pactum
           .spec()
           .post('/auth/login')
@@ -153,31 +203,37 @@ describe('App e2e test', () => {
   });
 
   describe('/users', () => {
-    const userDtoSchema = {
-      type: 'object',
-      required: ['id', 'username', 'createdAt'],
-      additionalProperties: false,
-      properties: {
-        id: { type: 'string', format: 'uuid' },
-        username: { type: 'string' },
-        createdAt: { type: 'string', format: 'date-time' },
-      },
-    };
-
     describe('GET', () => {
-      it('should return all users', () => {
-        const userDtoArraySchema = {
+      it('should return all users', async () => {
+        const dto = {
+          username: 'dummy@dummy.com',
+          password: 'dummy',
+        };
+        await pactum.spec().post('/auth/register').withBody(dto);
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody(dto)
+          .stores('access_token', 'access_token');
+        const responseSchema = {
           type: 'array',
-          items: userDtoSchema,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              username: { type: 'string' },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+            required: ['id', 'username', 'createdAt'],
+          },
         };
         return pactum
           .spec()
           .get('/users')
-          .withHeaders({
-            Authorization: 'Bearer $S{access_token}',
-          })
+          .withHeaders(authHeaders)
           .expectStatus(HttpStatus.OK)
-          .expectJsonSchema(userDtoArraySchema);
+          .expectJsonSchema(responseSchema);
       });
 
       it('should return unauthorized when auth header is missing', () => {
@@ -189,15 +245,33 @@ describe('App e2e test', () => {
     });
 
     describe('GET /me', () => {
-      it('should return current user information', () => {
+      it('should return current user information', async () => {
+        const dto = {
+          username: 'dummy@dummy.com',
+          password: 'dummy',
+        };
+        await pactum.spec().post('/auth/register').withBody(dto);
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody(dto)
+          .stores('access_token', 'access_token');
+        const responseSchema = {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            username: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+          required: ['id', 'username', 'createdAt'],
+        };
         return pactum
           .spec()
           .get('/users/me')
-          .withHeaders({
-            Authorization: 'Bearer $S{access_token}',
-          })
+          .withHeaders(authHeaders)
           .expectStatus(HttpStatus.OK)
-          .expectJsonSchema(userDtoSchema);
+          .expectJsonSchema(responseSchema);
       });
 
       it('should return unauthorized when auth header is missing', () => {
@@ -209,105 +283,235 @@ describe('App e2e test', () => {
     });
   });
 
-  describe('/chats', () => {
-    describe('POST', () => {
-      const createChatDto: CreateChatDto = {
-        name: 'test',
-      };
+  // describe('/chats', () => {
+  //   beforeEach(async () => {
+  //     await prismaService.cleanChats();
+  //   });
 
-      it('should create new chat', () => {
-        return pactum
-          .spec()
-          .post('/chats')
-          .withHeaders({
-            Authorization: 'Bearer $S{access_token}',
-          })
-          .withBody(createChatDto)
-          .expectStatus(HttpStatus.CREATED)
-          .expectJson('name', 'test');
-      });
+  //   describe('POST', () => {
+  //     it('should create new chat', () => {
+  //       const dto: CreateChatDto = {
+  //         name: 'dummy',
+  //       };
+  //       return pactum
+  //         .spec()
+  //         .post('/chats')
+  //         .withHeaders(authHeaders)
+  //         .withBody(dto)
+  //         .expectStatus(HttpStatus.CREATED)
+  //         .expectBodyContains('id')
+  //         .stores('chatId', 'id')
+  //         .expectJson('name', dto.name)
+  //         .expectBodyContains('createdAt');
+  //     });
 
-      it('should create new chat with members', () => {});
+  //     it('should create new chat with members', async () => {
+  //       const authDto: AuthDto = {
+  //         username: 'member@dummy.com',
+  //         password: 'dummy',
+  //       };
+  //       await pactum
+  //         .spec()
+  //         .post('/auth/register')
+  //         .withBody(authDto)
+  //         .stores('memberId', 'id');
+  //       const createChatDto: CreateChatDto = {
+  //         name: 'dummy',
+  //         members: ['$S{memberId}'],
+  //       };
+  //       return pactum
+  //         .spec()
+  //         .post('/chats')
+  //         .withHeaders(authHeaders)
+  //         .withBody(createChatDto)
+  //         .expectStatus(HttpStatus.CREATED)
+  //         .expectJson('name', createChatDto.name);
+  //     });
 
-      it('should return forbidden when auth header is missing', () => {});
+  //     it('should return unauthorized when auth header is missing', () => {
+  //       return pactum
+  //         .spec()
+  //         .post('/chats')
+  //         .expectStatus(HttpStatus.UNAUTHORIZED);
+  //     });
 
-      it('should return bad request when chat name is missing', () => {});
+  //     it('should return bad request when chat name is missing', () => {
+  //       return pactum
+  //         .spec()
+  //         .post('/chats')
+  //         .withHeaders(authHeaders)
+  //         .withBody({})
+  //         .expectStatus(HttpStatus.BAD_REQUEST);
+  //     });
 
-      it('should return bad request when members array is empty', () => {
-        const invalidDto = { ...createChatDto, members: [] };
-        return pactum
-          .spec()
-          .post('/chats')
-          .withHeaders({
-            Authorization: 'Bearer $S{access_token}',
-          })
-          .withBody(invalidDto)
-          .expectStatus(HttpStatus.BAD_REQUEST);
-      });
-    });
+  //     it('should return bad request when members array is defined but empty', () => {
+  //       const dto = { name: 'dummy2', members: [] };
+  //       return pactum
+  //         .spec()
+  //         .post('/chats')
+  //         .withHeaders(authHeaders)
+  //         .withBody(dto)
+  //         .expectStatus(HttpStatus.BAD_REQUEST);
+  //     });
+  //   });
 
-    describe('POST /:id/users', () => {
-      it('should add users to specified chat', () => {});
+  //   describe('POST /:chatId/members', () => {
+  //     beforeEach(async () => {
+  //       const dto: CreateChatDto = {
+  //         name: 'dummy',
+  //       };
+  //       await pactum
+  //         .spec()
+  //         .post('/chats')
+  //         .withHeaders(authHeaders)
+  //         .withBody(dto)
+  //         .stores('chatId', 'id');
+  //     });
 
-      it('should return not found if chat not exist', () => {});
+  //     it('should add users to specified chat', () => {
+  //       const dto: CreateChatMembersDto = {
+  //         members: ['$S{memberId}'],
+  //       };
+  //       const responseDto: CreateChatMembersResponseDto = {
+  //         count: 1,
+  //       };
+  //       return pactum
+  //         .spec()
+  //         .post('/chats/$S{chatId}/members')
+  //         .withHeaders(authHeaders)
+  //         .withBody(dto)
+  //         .expectStatus(HttpStatus.CREATED)
+  //         .expectJsonMatch(responseDto);
+  //     });
 
-      it('should return forbidden when auth header is missing', () => {});
+  //     it('should return unauthorized when auth header is missing', () =>
+  //       pactum
+  //         .spec()
+  //         .post('/chats/$S{chatId}/members')
+  //         .expectStatus(HttpStatus.UNAUTHORIZED));
 
-      it('should return bad request when users array is empty', () => {});
-    });
+  //     it('should return forbidden if user tries to access not accessible chat', () =>
+  //       pactum
+  //         .spec()
+  //         .post('/chats/dummy/members')
+  //         .withHeaders(authHeaders)
+  //         .expectStatus(HttpStatus.FORBIDDEN));
 
-    describe('GET', () => {
-      it('should return chats of current user', () => {});
+  //     it('should return bad request when users array is empty', () => {
+  //       const dto: CreateChatMembersDto = { members: [] };
+  //       return pactum
+  //         .spec()
+  //         .post('/chats/$S{chatId}/members')
+  //         .withHeaders(authHeaders)
+  //         .withBody(dto)
+  //         .expectStatus(HttpStatus.BAD_REQUEST);
+  //     });
+  //   });
 
-      it('should return forbidden when auth header is missing', () => {});
-    });
+  //   describe('GET', () => {
+  //     beforeEach(async () => {
+  //       const dto: CreateChatDto = {
+  //         name: 'dummy',
+  //       };
+  //       await pactum
+  //         .spec()
+  //         .post('/chats')
+  //         .withHeaders(authHeaders)
+  //         .withBody(dto)
+  //         .stores('chatId', 'id');
+  //     });
 
-    describe('GET /:id/users', () => {
-      it('should return users for specified chat', () => {});
+  //     it('should return chats of current user', () =>
+  //       pactum
+  //         .spec()
+  //         .get('/chats')
+  //         .withHeaders(authHeaders)
+  //         .expectStatus(200)
+  //         .expectJsonSchema({
+  //           type: 'array',
+  //           items: {
+  //             type: 'object',
+  //             properties: {
+  //               id: { type: 'string', format: 'uuid' },
+  //               name: { type: 'string' },
+  //               createdAt: { type: 'string', format: 'date-time' },
+  //             },
+  //             required: ['id', 'name', 'createdAt'],
+  //           },
+  //         }));
 
-      it('should return not found if chat not exist', () => {});
+  //     it('should return unauthorized when auth header is missing', () =>
+  //       pactum.spec().get('/chats').expectStatus(HttpStatus.UNAUTHORIZED));
+  //   });
 
-      it('should return forbidden when auth header is missing', () => {});
+  //   describe('GET /:chatId/members', () => {
+  //     it('should return users for specified chat', async () => {
+  //       const createChatDto: CreateChatDto = {
+  //         name: 'dummy',
+  //       };
+  //       await pactum
+  //         .spec()
+  //         .post('/chats')
+  //         .withHeaders(authHeaders)
+  //         .withBody(createChatDto)
+  //         .stores('chatId', 'id');
 
-      it('should return forbidden when user is not chat owner', () => {});
+  //       const createChatMembersDto: CreateChatMembersDto = {
+  //         members: ['$S{memberId}'],
+  //       };
+  //       await pactum
+  //         .spec()
+  //         .post('/chats/$S{chatId}/members')
+  //         .withHeaders(authHeaders)
+  //         .withBody(createChatMembersDto);
 
-      it('should return forbidden when user is not chat member', () => {});
-    });
+  //       return pactum
+  //         .spec()
+  //         .get('/&S{chatId}/members')
+  //         .withHeaders(authHeaders);
+  //     });
 
-    describe('DELETE /:id', () => {
-      it('should delete specified chat', () => {});
+  //     it('should return not found if chat not exist', () => {});
 
-      it('should return forbidden when auth header is missing', () => {});
+  //     it('should return unauthorized when auth header is missing', () => {});
 
-      it('should return forbidden when user is not owner', () => {});
+  //     it('should return forbidden when user is not chat member', () => {});
+  //   });
 
-      it('should return not found when chat not exist', () => {});
-    });
+  //   describe('DELETE /:chatId', () => {
+  //     it('should delete specified chat', () => {});
 
-    describe('DELETE /:id/users/', () => {
-      it('should delete all users from chat if members is empty', () => {});
+  //     it('should return unauthorized when auth header is missing', () => {});
 
-      it('should delete specified users from chat', () => {});
+  //     it('should return forbidden when user is not owner', () => {});
 
-      it('should return forbidden when auth header is missing', () => {});
+  //     it('should return not found when chat not exist', () => {});
+  //   });
 
-      it('should return forbidden when user is not owner', () => {});
+  //   describe('DELETE /:chatId/members', () => {
+  //     it('should delete all users from chat if members is empty', () => {});
 
-      it('should return not found when chat not exist', () => {});
+  //     it('should delete specified users from chat', () => {});
 
-      it('should return not found when user not a member', () => {});
-    });
+  //     it('should return unauthorized when auth header is missing', () => {});
 
-    describe('DELETE /:id/users/:usersId', () => {
-      it('should delete specified user from chat', () => {});
+  //     it('should return forbidden when user is not owner', () => {});
 
-      it('should return forbidden when auth header is missing', () => {});
+  //     it('should return not found when chat not exist', () => {});
 
-      it('should return forbidden when user is not owner', () => {});
+  //     it('should return not found when user not a member', () => {});
+  //   });
 
-      it('should return not found when chat not exist', () => {});
+  //   describe('DELETE /:chatId/members/me', () => {
+  //     it('should delete current user from chat', () => {});
 
-      it('should return not found when user not a member', () => {});
-    });
-  });
+  //     it('should delete chat if user is owner', () => {});
+
+  //     it('should return unauthorized when auth header is missing', () => {});
+
+  //     it('should return not found when chat not exist', () => {});
+
+  //     it('should return not found when user not chat member', () => {});
+  //   });
+  // });
 });

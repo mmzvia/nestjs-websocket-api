@@ -9,4 +9,8 @@ export class ChatDto {
 
   @Expose()
   createdAt: Date;
+
+  constructor(partial: Partial<ChatDto>) {
+    Object.assign(this, partial);
+  }
 }

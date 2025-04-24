@@ -4,21 +4,24 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  SerializeOptions,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto, RegisterResponseDto, LoginResponseDto } from './dto';
+import { AuthDto, LoginResponseDto } from './dto';
 import { LocalAuthGuard } from './guards';
 import { User } from './decorators';
 import { AuthUser } from './types';
+import { UserDto } from 'src/users/dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  register(@Body() authDto: AuthDto): Promise<RegisterResponseDto> {
-    return this.authService.register(authDto);
+  @SerializeOptions({ type: UserDto })
+  register(@Body() dto: AuthDto): Promise<UserDto> {
+    return this.authService.register(dto);
   }
 
   @Post('login')
