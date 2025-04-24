@@ -53,11 +53,12 @@ export class ChatsController {
     return this.chatsService.getChats(userId);
   }
 
-  // @Get(':chatId')
-  // @UseGuards(ChatMemberGuard)
-  // getChat(@Param('chatId') chatId: string): Promise<ChatDto> {
-  //   return this.chatsService.getChat(chatId);
-  // }
+  @Get(':chatId/members')
+  @UseGuards(ChatMemberGuard)
+  @SerializeOptions({ type: ChatMemberDto })
+  getChat(@Param('chatId') chatId: string): Promise<ChatMemberDto[]> {
+    return this.chatsService.getChatMembers(chatId);
+  }
 
   // @Delete(':chatId')
   // @UseGuards(ChatOwnerGuard)

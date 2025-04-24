@@ -13,14 +13,4 @@ export class UsersService {
   async getUsers(): Promise<UserDto[]> {
     return this.prismaService.user.findMany();
   }
-
-  async getUser(userId: string): Promise<UserDto> {
-    const user = await this.prismaService.user.findUnique({
-      where: { id: userId },
-    });
-    if (!user) {
-      throw new BadRequestException();
-    }
-    return user;
-  }
 }

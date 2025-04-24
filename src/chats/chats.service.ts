@@ -12,6 +12,27 @@ import {
 export class ChatsService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  async isChatOwner(chatId: string, userId: string): Promise<boolean> {
+    const chat = await this.prismaService.chat.findUnique({
+      where: { id: chatId },
+      select: { ownerId: true },
+    });
+    const isOwner = chat?.ownerId == userId;
+    return isOwner;
+  }
+
+  async isChatMember(chatId: string, userId: string): Promise<boolean> {
+    const member = await this.prismaService.chatMember.findUnique({
+      where: {
+        chatId_userId: {
+          chatId,
+          userId,
+        },
+      },
+    });
+    return member !== null;
+  }
+
   async createChat(
     ownerId: string,
     createChatDto: CreateChatDto,
@@ -69,16 +90,28 @@ export class ChatsService {
     });
   }
 
-  async isChatOwner(chatId: string, userId: string): Promise<boolean> {
-    const chat = await this.prismaService.chat.findUnique({
-      where: { id: chatId },
-      select: { ownerId: true },
+  async getChatMembers(chatId: string): Promise<ChatMemberDto[]> {
+    const members = await this.prismaService.chatMember.findMany({
+      where: {
+        chatId: chatId,
+      },
+      select: {
+        userId: true,
+        joinedAt: true,
+        user: {
+          select: {
+            username: true,
+          },
+        },
+      },
     });
-    const isOwner = chat?.ownerId == userId;
-    return isOwner;
-  }
-
-  async isChatMember(chatId: string, userId: string): Promise<boolean> {
-    return true;
+    if (!members) {
+    }
+    const formattedMembers = members.map((member) => ({
+      userId: member.userId,
+      username: member.user.username,
+      joinedAt: member.joinedAt,
+    }));
+    return formattedMembers;
   }
 }
