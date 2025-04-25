@@ -6,6 +6,7 @@ import {
   CreateChatDto,
   CreateChatMembersDto,
   CreateChatMembersResponseDto,
+  DeleteChatMembersDto,
 } from './dto';
 
 @Injectable()
@@ -28,6 +29,9 @@ export class ChatsService {
           chatId,
           userId,
         },
+      },
+      select: {
+        userId: true,
       },
     });
     return member !== null;
@@ -113,5 +117,36 @@ export class ChatsService {
       joinedAt: member.joinedAt,
     }));
     return formattedMembers;
+  }
+
+  async deleteChat(chatId: string): Promise<void> {
+    await this.prismaService.$transaction([
+      this.prismaService.chatMember.deleteMany({ where: { chatId } }),
+      this.prismaService.chat.delete({ where: { id: chatId } }),
+    ]);
+  }
+
+  async deleteChatMembers(
+    chatId: string,
+    deleteChatMembersDto: DeleteChatMembersDto,
+  ): Promise<void> {
+    const { members } = deleteChatMembersDto;
+    const chat = await this.prismaService.chat.findUnique({
+      where: { id: chatId },
+      select: { ownerId: true },
+    });
+    const includesOwner = members!.includes(chat!.ownerId);
+    if (includesOwner) {
+      await this.deleteChat(chatId);
+    } else {
+      await this.prismaService.chatMember.deleteMany({
+        where: {
+          chatId,
+          userId: {
+            in: members,
+          },
+        },
+      });
+    }
   }
 }

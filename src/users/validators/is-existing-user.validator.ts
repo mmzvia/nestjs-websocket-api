@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ValidationArguments,
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
@@ -20,5 +21,13 @@ export class IsExistingUserConstraint implements ValidatorConstraintInterface {
     });
     const isValid = count === ids.length;
     return isValid;
+  }
+
+  defaultMessage(args: ValidationArguments): string {
+    const value = args.value;
+    if (Array.isArray(value)) {
+      return `Some user IDs do not exist: [${value.join(', ')}]`;
+    }
+    return `User ID "${value}" does not exist.`;
   }
 }

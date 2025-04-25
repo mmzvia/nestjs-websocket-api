@@ -19,7 +19,7 @@ import {
   CreateChatDto,
   CreateChatMembersDto,
   CreateChatMembersResponseDto,
-  deleteChatMembersDto,
+  DeleteChatMembersDto,
 } from './dto';
 import { ChatOwnerGuard, ChatMemberGuard } from './guards';
 
@@ -60,27 +60,33 @@ export class ChatsController {
     return this.chatsService.getChatMembers(chatId);
   }
 
-  // @Delete(':chatId')
-  // @UseGuards(ChatOwnerGuard)
-  // deleteChat(@Param('chatId') chatId: string): Promise<ChatDto> {
-  //   return this.chatsService.deleteChat(chatId);
-  // }
+  @Delete(':chatId')
+  @UseGuards(ChatOwnerGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteChat(@Param('chatId') chatId: string): Promise<void> {
+    return this.chatsService.deleteChat(chatId);
+  }
 
-  // @Delete(':chatId/members')
-  // @UseGuards(ChatOwnerGuard)
-  // deleteChatMembers(
-  //   @Param('chatId') chatId: string,
-  //   dto: deleteChatMembersDto,
-  // ): Promise<ChatDto> {
-  //   return this.chatsService.deleteChatMembers(chatId, dto);
-  // }
+  @Delete(':chatId/members')
+  @UseGuards(ChatOwnerGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteChatMembers(
+    @Param('chatId') chatId: string,
+    @Body() dto: DeleteChatMembersDto,
+  ): Promise<void> {
+    return this.chatsService.deleteChatMembers(chatId, dto);
+  }
 
-  // @Delete(':chatId/members')
-  // @UseGuards(ChatMemberGuard)
-  // deleteCurrentUserFromChat(
-  //   @Param('chatId') chatId: string,
-  //   @User('id') userId: string,
-  // ): Promise<ChatDto> {
-  //   return this.chatsService.deleteChatMember(chatId, userId);
-  // }
+  @Delete(':chatId/members/me')
+  @UseGuards(ChatMemberGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteCurrentUserFromChat(
+    @Param('chatId') chatId: string,
+    @User('id') userId: string,
+  ): Promise<void> {
+    const deleteChatMembersDto: DeleteChatMembersDto = {
+      members: [userId],
+    };
+    return this.chatsService.deleteChatMembers(chatId, deleteChatMembersDto);
+  }
 }
