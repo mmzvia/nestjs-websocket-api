@@ -251,7 +251,11 @@ describe('App e2e test', () => {
         username: 'owner@dummy.com',
         password: 'dummy',
       };
-      await pactum.spec().post('/auth/register').withBody(authDto);
+      await pactum
+        .spec()
+        .post('/auth/register')
+        .withBody(authDto)
+        .stores('ownerId', 'id');
       await pactum
         .spec()
         .post('/auth/login')
@@ -651,6 +655,24 @@ describe('App e2e test', () => {
           .withBearerToken(ACCESS_TOKEN)
           .withBody(deleteMembersDto)
           .expectStatus(HttpStatus.NO_CONTENT);
+      });
+
+      it('should delete chat if owner is in members field', async () => {
+        const deleteMembersDto = {
+          members: ['$S{ownerId}'],
+        };
+        await pactum
+          .spec()
+          .delete('/chats/$S{chatId}/members')
+          .withBearerToken(ACCESS_TOKEN)
+          .withBody(deleteMembersDto)
+          .expectStatus(HttpStatus.NO_CONTENT);
+
+        return pactum
+          .spec()
+          .get('/chats')
+          .withBearerToken(ACCESS_TOKEN)
+          .expectJsonLength(0);
       });
 
       it('should return unauthorized when auth header is missing', () => {
