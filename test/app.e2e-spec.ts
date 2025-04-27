@@ -12,10 +12,12 @@ import * as pactum from 'pactum';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Reflector } from '@nestjs/core';
 import { useContainer } from 'class-validator';
-import { identity } from 'rxjs';
 import { randomUUID } from 'crypto';
+import { Socket, io } from 'socket.io-client';
+import { ConnectToChatsDto, MessageDto } from 'src/messages/dto';
 
 describe('App e2e test', () => {
+  const SERVER_URL = 'http://localhost:3333';
   const ACCESS_TOKEN = '$S{access_token}';
 
   let app: INestApplication;
@@ -45,7 +47,7 @@ describe('App e2e test', () => {
 
     prismaService = app.get(PrismaService);
 
-    pactum.request.setBaseUrl('http://localhost:3333');
+    pactum.request.setBaseUrl(SERVER_URL);
 
     await app.init();
     await app.listen(3333);
@@ -794,4 +796,78 @@ describe('App e2e test', () => {
       });
     });
   });
+
+  // describe('/socket.io', () => {
+  //   let userId: string;
+  //   let chatId: string;
+  //   let socket: Socket;
+
+  //   beforeEach(async () => {
+  //     const authDto = {
+  //       username: 'dummy@dummy.com',
+  //       password: 'dummy',
+  //     };
+  //     userId = await pactum
+  //       .spec()
+  //       .post('/auth/register')
+  //       .withBody(authDto)
+  //       .returns('id');
+  //     const accessToken = await pactum
+  //       .spec()
+  //       .post('/auth/login')
+  //       .withBody(authDto)
+  //       .returns('access_token');
+
+  //     const createChatDto = {
+  //       name: 'dummy',
+  //     };
+  //     chatId = await pactum
+  //       .spec()
+  //       .post('/chats')
+  //       .withBearerToken(ACCESS_TOKEN)
+  //       .withBody(createChatDto)
+  //       .returns('id');
+
+  //     socket = io(SERVER_URL, {
+  //       auth: { token: accessToken },
+  //       transports: ['websocket'],
+  //     });
+  //     await new Promise((resolve) =>
+  //       socket.once('connect', () => resolve(undefined)),
+  //     );
+  //   });
+
+  //   afterEach(() => {
+  //     if (socket.connected) {
+  //       socket.disconnect();
+  //     }
+  //   });
+
+  //   it('should connect to chat room', async () => {
+  //     const connectToChatsDto = {
+  //       chatIds: [chatId],
+  //     };
+  //     const responseDto: ConnectToChatsDto = await new Promise((resolve) => {
+  //       socket.once('connected', resolve);
+  //       socket.emit('connectToChat', connectToChatsDto);
+  //     });
+  //     expect(responseDto).toBeDefined();
+  //     expect(responseDto.chatIds).toContain(chatId);
+  //   });
+
+  //   // it('should create message', async () => {
+  //   //   const createMessageDto = {
+  //   //     chatId: chatId,
+  //   //     content: 'dummy',
+  //   //   };
+  //   //   const responseDto: MessageDto = await new Promise((resolve) => {
+  //   //     socket.once('newMessage', resolve);
+  //   //     socket.emit('createMessage', createMessageDto);
+  //   //   });
+  //   //   expect(responseDto).toBeDefined();
+  //   //   expect(responseDto.chatId).toBe(chatId);
+  //   //   expect(responseDto.senderId).toBe(userId);
+  //   //   expect(responseDto.content).toBe(createMessageDto.content);
+  //   // });
+  // });
 });

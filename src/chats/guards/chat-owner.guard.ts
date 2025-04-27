@@ -21,7 +21,7 @@ export class ChatOwnerGuard implements CanActivate {
     if (!chatId) {
       throw new BadRequestException();
     }
-    const isOwner = await this.chatsService.isChatOwner(chatId, userId);
+    const isOwner = await this.chatsService.isChatsOwner(userId, [chatId]);
     if (!isOwner) {
       throw new ForbiddenException();
     }

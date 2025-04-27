@@ -1,13 +1,13 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
-import { IsExistingUserConstraint } from '../validators';
+import { IsExistingChatConstraint } from '../validators';
 
-export function IsExistingUser(validationOptions?: ValidationOptions) {
+export function IsExistingChat(validationOptions?: ValidationOptions) {
   return function (object: any, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
-      validator: IsExistingUserConstraint,
+      validator: IsExistingChatConstraint,
     });
   };
 }

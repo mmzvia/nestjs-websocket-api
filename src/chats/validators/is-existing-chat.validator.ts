@@ -8,7 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 @ValidatorConstraint({ async: true })
-export class IsExistingUserConstraint implements ValidatorConstraintInterface {
+export class IsExistingChatConstraint implements ValidatorConstraintInterface {
   constructor(private readonly prismaService: PrismaService) {}
 
   async validate(value: string | string[]): Promise<boolean> {
@@ -16,7 +16,7 @@ export class IsExistingUserConstraint implements ValidatorConstraintInterface {
       return false;
     }
     const ids = Array.isArray(value) ? value : [value];
-    const count = await this.prismaService.user.count({
+    const count = await this.prismaService.chat.count({
       where: { id: { in: ids } },
     });
     const isValid = count === ids.length;
@@ -26,8 +26,8 @@ export class IsExistingUserConstraint implements ValidatorConstraintInterface {
   defaultMessage(args: ValidationArguments): string {
     const value = args.value;
     if (Array.isArray(value)) {
-      return `Some user IDs do not exist: [${value.join(', ')}]`;
+      return `Some chat IDs do not exist: [${value.join(', ')}]`;
     }
-    return `User ID "${value}" does not exist`;
+    return `Chat ID "${value}" does not exist`;
   }
 }

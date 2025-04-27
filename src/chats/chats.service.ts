@@ -13,51 +13,51 @@ import {
 export class ChatsService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async isChatOwner(chatId: string, userId: string): Promise<boolean> {
-    const chat = await this.prismaService.chat.findUnique({
-      where: { id: chatId },
-      select: { ownerId: true },
+  async isChatsOwner(userId: string, chatIds: string[]): Promise<boolean> {
+    const count = await this.prismaService.chat.count({
+      where: {
+        id: { in: chatIds },
+        ownerId: userId,
+      },
     });
-    const isOwner = chat?.ownerId == userId;
+    const isOwner = chatIds.length === count;
     return isOwner;
   }
 
-  async isChatMember(chatId: string, userId: string): Promise<boolean> {
-    const member = await this.prismaService.chatMember.findUnique({
+  async isChatsMember(userId: string, chatIds: string[]): Promise<boolean> {
+    const count = await this.prismaService.chatMember.count({
       where: {
-        chatId_userId: {
-          chatId,
-          userId,
-        },
-      },
-      select: {
-        userId: true,
+        chatId: { in: chatIds },
+        userId,
       },
     });
-    return member !== null;
+    return chatIds.length === count;
   }
 
   async createChat(
     ownerId: string,
     createChatDto: CreateChatDto,
   ): Promise<ChatDto> {
+    const { name, members } = createChatDto;
     const createdChat = await this.prismaService.$transaction(async (tx) => {
       const chat = await tx.chat.create({
         data: {
           ownerId,
-          name: createChatDto.name,
+          name,
+        },
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
         },
       });
-      const ownerAndMembers = new Set([
-        ownerId,
-        ...(createChatDto.members || []),
-      ]);
-      const membersData = Array.from(ownerAndMembers).map((userId) => ({
+      const ownerAndMembers = [ownerId, ...(members ?? [])];
+      const data = Array.from(ownerAndMembers).map((userId) => ({
         chatId: chat.id,
         userId,
       }));
       await tx.chatMember.createMany({
-        data: membersData,
+        data,
         skipDuplicates: true,
       });
       return chat;

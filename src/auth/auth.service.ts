@@ -21,6 +21,11 @@ export class AuthService {
           username: dto.username,
           password: hash,
         },
+        select: {
+          id: true,
+          username: true,
+          createdAt: true,
+        },
       });
       return registeredUser;
     } catch (error) {

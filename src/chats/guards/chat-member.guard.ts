@@ -21,7 +21,7 @@ export class ChatMemberGuard implements CanActivate {
     if (!chatId) {
       throw new BadRequestException();
     }
-    const isMember = await this.chatsService.isChatMember(chatId, userId);
+    const isMember = await this.chatsService.isChatsMember(userId, [chatId]);
     if (!isMember) {
       throw new ForbiddenException();
     }
