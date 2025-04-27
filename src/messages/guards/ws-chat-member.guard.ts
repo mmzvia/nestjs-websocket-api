@@ -10,7 +10,7 @@ export class WsChatMemberGuard implements CanActivate {
     const client = context.switchToWs().getClient();
     const data = context.switchToWs().getData();
 
-    const userId = client.data?.userId;
+    const userId = client?.user?.id;
     if (!userId) {
       throw new WsException('Unauthorized');
     }

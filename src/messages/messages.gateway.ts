@@ -13,14 +13,14 @@ import {
 } from './dto';
 import { Server, Socket } from 'socket.io';
 import { SerializeOptions, UseGuards } from '@nestjs/common';
-import { WsJwtGuard } from 'src/auth/guards';
+import { WsJwtAuthGuard } from 'src/auth/guards';
 import { WsChatMemberGuard } from './guards/ws-chat-member.guard';
 import { User } from 'src/auth/decorators';
 import { MessagesService } from './messages.service';
 import { plainToInstance } from 'class-transformer';
 
 @WebSocketGateway()
-@UseGuards(WsJwtGuard)
+@UseGuards(WsJwtAuthGuard)
 export class MessagesGateway {
   @WebSocketServer()
   server: Server;

@@ -8,19 +8,18 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 @ValidatorConstraint({ async: true })
-export class IsExistingChatConstraint implements ValidatorConstraintInterface {
+export class IsExistingChatsConstraint implements ValidatorConstraintInterface {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async validate(value: string | string[]): Promise<boolean> {
-    if (!value || (Array.isArray(value) && value.length === 0)) {
+  async validate(chatIds: string[]): Promise<boolean> {
+    const chatCount = chatIds.length;
+    if (chatCount === 0) {
       return false;
     }
-    const ids = Array.isArray(value) ? value : [value];
-    const count = await this.prismaService.chat.count({
-      where: { id: { in: ids } },
+    const existingChatCount = await this.prismaService.chat.count({
+      where: { id: { in: chatIds } },
     });
-    const isValid = count === ids.length;
-    return isValid;
+    return chatCount === existingChatCount;
   }
 
   defaultMessage(args: ValidationArguments): string {

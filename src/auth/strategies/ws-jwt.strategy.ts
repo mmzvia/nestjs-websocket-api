@@ -14,8 +14,8 @@ export class WsJwtStrategy extends PassportStrategy(Strategy, 'ws-jwt') {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (context) => {
-          return context?.handshake?.auth?.token;
+        (client) => {
+          return client?.handshake?.auth?.token;
         },
       ]),
       ignoreExpiration: false,
@@ -32,7 +32,7 @@ export class WsJwtStrategy extends PassportStrategy(Strategy, 'ws-jwt') {
     if (!user) {
       throw new WsException('User not found');
     }
-    const authUser: AuthUser = { id: user.id, username: user.username };
+    const authUser: AuthUser = { id: user.id };
     return authUser;
   }
 }

@@ -5,7 +5,7 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { IsExistingUser } from 'src/users/decorators';
+import { IsExistingUsers } from 'src/users/decorators';
 
 export class CreateChatDto {
   @IsString()
@@ -15,6 +15,6 @@ export class CreateChatDto {
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
-  @IsExistingUser()
+  @IsExistingUsers()
   members?: string[];
 }

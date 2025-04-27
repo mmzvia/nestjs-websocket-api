@@ -62,10 +62,7 @@ export class AuthService {
     if (!isMatch) {
       throw null;
     }
-    const authUser: AuthUser = {
-      id: user.id,
-      username: user.username,
-    };
+    const authUser: AuthUser = { id: user.id };
     return authUser;
   }
 }
