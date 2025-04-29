@@ -16,6 +16,7 @@ export class PrismaService extends PrismaClient {
 
   async cleanDb(): Promise<void> {
     await this.$transaction([
+      this.message.deleteMany(),
       this.chatMember.deleteMany(),
       this.chat.deleteMany(),
       this.user.deleteMany(),
