@@ -3,7 +3,7 @@ import { ChatsService } from './chats.service';
 import { ChatsController } from './chats.controller';
 import { UsersModule } from 'src/users/users.module';
 import { ChatOwnerGuard, ChatMemberGuard } from './guards';
-import { IsExistingChatsConstraint } from './validators';
+import { HasChatsConstraint } from './validators';
 
 @Module({
   imports: [UsersModule],
@@ -12,8 +12,8 @@ import { IsExistingChatsConstraint } from './validators';
     ChatsService,
     ChatOwnerGuard,
     ChatMemberGuard,
-    IsExistingChatsConstraint,
+    HasChatsConstraint,
   ],
-  exports: [ChatsService, IsExistingChatsConstraint],
+  exports: [ChatsService, HasChatsConstraint],
 })
 export class ChatsModule {}

@@ -1,1 +1,1 @@
-export * from './is-existing-users.decorator';
+export * from './has-users.decorator';

@@ -14,24 +14,33 @@ export class ChatsService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async isChatsOwner(userId: string, chatIds: string[]): Promise<boolean> {
-    const count = await this.prismaService.chat.count({
-      where: {
-        id: { in: chatIds },
-        ownerId: userId,
-      },
-    });
-    const isOwner = chatIds.length === count;
-    return isOwner;
+    try {
+      const count = await this.prismaService.chat.count({
+        where: {
+          id: { in: chatIds },
+          ownerId: userId,
+        },
+      });
+      const isOwner = chatIds.length === count;
+      return isOwner;
+    } catch (error) {
+      return false;
+    }
   }
 
   async isChatsMember(userId: string, chatIds: string[]): Promise<boolean> {
-    const count = await this.prismaService.chatMember.count({
-      where: {
-        chatId: { in: chatIds },
-        userId,
-      },
-    });
-    return chatIds.length === count;
+    try {
+      const count = await this.prismaService.chatMember.count({
+        where: {
+          chatId: { in: chatIds },
+          userId,
+        },
+      });
+      const isMember = chatIds.length === count;
+      return isMember;
+    } catch (error) {
+      return false;
+    }
   }
 
   async createChat(

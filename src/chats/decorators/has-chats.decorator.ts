@@ -1,13 +1,13 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
-import { IsExistingUsersConstraint } from '../validators';
+import { HasChatsConstraint } from '../validators';
 
-export function IsExistingUsers(validationOptions?: ValidationOptions) {
+export function HasChats(validationOptions?: ValidationOptions) {
   return function (object: any, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
-      validator: IsExistingUsersConstraint,
+      validator: HasChatsConstraint,
     });
   };
 }

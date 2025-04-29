@@ -8,7 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 @ValidatorConstraint({ async: true })
-export class IsExistingChatsConstraint implements ValidatorConstraintInterface {
+export class HasChatsConstraint implements ValidatorConstraintInterface {
   constructor(private readonly prismaService: PrismaService) {}
 
   async validate(chatIds: string[]): Promise<boolean> {

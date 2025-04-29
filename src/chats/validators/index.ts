@@ -1,1 +1,1 @@
-export * from './is-existing-chats.validator';
+export * from './has-chats.validator';

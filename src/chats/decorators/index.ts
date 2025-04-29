@@ -1,1 +1,1 @@
-export * from './is-existing-chats.decorator';
+export * from './has-chats.decorator';

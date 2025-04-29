@@ -4,6 +4,8 @@ import {
   MessageBody,
   WebSocketServer,
   ConnectedSocket,
+  OnGatewayConnection,
+  OnGatewayInit,
 } from '@nestjs/websockets';
 import {
   ConnectToChatsDto,
@@ -12,33 +14,51 @@ import {
   MessageDto,
 } from './dto';
 import { Server, Socket } from 'socket.io';
-import { SerializeOptions, UseGuards } from '@nestjs/common';
-import { WsJwtAuthGuard } from 'src/auth/guards';
-import { WsChatMemberGuard } from './guards/ws-chat-member.guard';
+import { SerializeOptions, UsePipes } from '@nestjs/common';
 import { User } from 'src/auth/decorators';
 import { MessagesService } from './messages.service';
 import { plainToInstance } from 'class-transformer';
+import { WsJwtAuthMiddleware } from 'src/auth/middlewares';
+import { WsValidationPipe } from './pipes';
+import { WsUser } from 'src/auth/decorators/ws-user.decorator';
+import { ChatsService } from 'src/chats/chats.service';
 
 @WebSocketGateway()
-@UseGuards(WsJwtAuthGuard)
-export class MessagesGateway {
+@UsePipes(WsValidationPipe)
+export class MessagesGateway implements OnGatewayInit, OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly messagesService: MessagesService) {}
+  constructor(
+    private readonly wsJwtAuthMiddleware: WsJwtAuthMiddleware,
+    private readonly chatsService: ChatsService,
+    private readonly messagesService: MessagesService,
+  ) {}
 
-  @SubscribeMessage('connectToChat')
-  @UseGuards(WsChatMemberGuard)
-  connectToChat(
+  afterInit(server: Server) {
+    server.use((socket, next) => this.wsJwtAuthMiddleware.use(socket, next));
+  }
+
+  handleConnection() {
+    console.log('CONNECTION');
+  }
+
+  @SubscribeMessage('connectToChats')
+  async connectToChats(
+    @WsUser('id') userId: string,
     @MessageBody() dto: ConnectToChatsDto,
     @ConnectedSocket() client: Socket,
-  ): void {
-    dto.chatIds.forEach((id) => client.join(id));
-    client.emit('connected', dto);
+  ): Promise<boolean> {
+    const { chatIds } = dto;
+    const isMember = await this.chatsService.isChatsMember(userId, chatIds);
+    if (!isMember) {
+      return false;
+    }
+    chatIds.forEach((id) => client.join(id));
+    return true;
   }
 
   @SubscribeMessage('createMessage')
-  @UseGuards(WsChatMemberGuard)
   @SerializeOptions({ type: MessageDto })
   async createMessage(
     @User('id') senderId: string,
@@ -52,7 +72,6 @@ export class MessagesGateway {
   }
 
   @SubscribeMessage('findMessages')
-  @UseGuards(WsChatMemberGuard)
   @SerializeOptions({ type: MessageDto })
   async findMessages(
     @MessageBody() dto: FindMessagesDto,

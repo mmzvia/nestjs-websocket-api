@@ -11,13 +11,13 @@ import { useContainer } from 'class-validator';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const vpOptitons: ValidationPipeOptions = {
     whitelist: true,
     forbidNonWhitelisted: true,
   };
   const vp = new ValidationPipe(vpOptitons);
   app.useGlobalPipes(vp);
-  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   const reflector = app.get(Reflector);
   const csiOptions: ClassSerializerInterceptorOptions = {

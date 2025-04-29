@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { IsExistingUsersConstraint } from './validators';
+import { HasUsersConstraint } from './validators';
 
 @Module({
   controllers: [UsersController],
-  providers: [UsersService, IsExistingUsersConstraint],
-  exports: [IsExistingUsersConstraint],
+  providers: [UsersService, HasUsersConstraint],
+  exports: [HasUsersConstraint],
 })
 export class UsersModule {}
