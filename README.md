@@ -2,7 +2,7 @@
 
 ## 🎯 Goal
 
-Build a basic real-time messenger API using WebSocket with the ability to communicate in separate chat rooms.
+Build a basic real-time messenger using WebSocket with the ability to communicate in separate chat rooms.
 
 Users should be able to:
 
@@ -10,6 +10,26 @@ Users should be able to:
 - Create chat rooms
 - Add other registered users to chats
 - Exchange messages in real-time
+
+## 👣 Main User Scenarios
+
+**New User Flow**
+
+1. Register
+2. Create a chat
+3. Fetch all users
+4. Add selected users to the chat
+
+**Join & Message Flow**
+
+1. Fetch available chats
+2. Connect to a chat
+3. Start messaging
+
+**Chat Management Flow**
+
+1. View users in a chat
+2. Remove specific users from the chat
 
 ## 🛣️ Roadmap
 
@@ -53,22 +73,37 @@ Users should be able to:
 - Send messages to a chat
 - Receive messages in real-time
 
-## 👣 Main User Scenarios
+## 🗃️ Draft Database Schema
 
-**New User Flow**
+### User
 
-1. Register
-2. Create a chat
-3. Fetch all users
-4. Add selected users to the chat
+| Field    | Type             | Description     |
+| -------- | ---------------- | --------------- |
+| id       | UUID PRIMARY KEY | -               |
+| username | VARCHAR UNIQUE   | -               |
+| password | VARCHAR          | Hashed password |
 
-**Join & Message Flow**
+### Chat
 
-1. Fetch available chats
-2. Connect to a chat
-3. Start messaging
+| Field    | Type                           | Description      |
+| -------- | ------------------------------ | ---------------- |
+| id       | UUID / INT PRIMARY KEY         | -                |
+| owner_id | UUID / INT REFERENCES User(id) | -                |
+| name     | VARCHAR                        | Name of the chat |
 
-**Chat Management Flow**
+### ChatMember
 
-1. View users in a chat
-2. Remove specific users from the chat
+| Field   | Type                           | Description |
+| ------- | ------------------------------ | ----------- |
+| id      | UUID / INT PRIMARY KEY         | -           |
+| chat_id | UUID / INT REFERENCES Chat(id) | -           |
+| user_id | UUID / INT REFERENCES User(id) | -           |
+
+### Message
+
+| Field     | Type                           | Description |
+| --------- | ------------------------------ | ----------- |
+| id        | UUID / INT PRIMARY KEY         |             |
+| chat_id   | UUID / INT REFERENCES Chat(id) |             |
+| sender_id | UUID / INT REFERENCES User(id) |             |
+| content   | TEXT Message body              |             |
