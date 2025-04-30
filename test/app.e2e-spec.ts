@@ -885,18 +885,18 @@ describe('App e2e test', () => {
       });
     });
 
-    describe('connectToChats', () => {
+    describe('chats:connect', () => {
       it('should connect user to chat', (done) => {
         socket = io(SERVER_URL, {
           auth: { token: ownerAccessToken },
           transports: ['websocket'],
         });
         socket.once('connect', () => {
-          socket.once('connectedToChats', () => done());
+          socket.once('chats:connect:success', () => done());
           const dto = {
             chatIds: [chatId],
           };
-          socket.emit('connectToChats', dto);
+          socket.emit('chats:connect', dto);
         });
       });
 
@@ -906,44 +906,45 @@ describe('App e2e test', () => {
           transports: ['websocket'],
         });
         socket.once('connect', () => {
-          socket.once('exception', (error) => done());
+          socket.once('exception', (_) => done());
           const dto = {
             chatIds: [chatId],
           };
-          socket.emit('connectToChats', dto);
+          socket.emit('chats:connect', dto);
         });
       });
     });
 
-    describe('createMessage', () => {
+    describe('messages:create', () => {
       it('should create new message', (done) => {
         socket = io(SERVER_URL, {
           auth: { token: ownerAccessToken },
           transports: ['websocket'],
         });
         socket.once('connect', () => {
-          socket.once('connectedToChats', () => {
-            const dto = {
+          socket.once('chats:connect:success', () => {
+            const createMessageDto = {
               chatId,
               content: 'dummy',
             };
-            socket.once('newMessage', (response) => {
+            socket.once('messages:new', (response) => {
               try {
+                const { chatId, content } = createMessageDto;
                 expect(response).toBeDefined();
-                expect(response.chatId).toBe(dto.chatId);
+                expect(response.chatId).toBe(chatId);
                 expect(response.senderId).toBe(ownerId);
-                expect(response.content).toBe(dto.content);
+                expect(response.content).toBe(content);
                 done();
               } catch (error) {
                 done(error);
               }
             });
-            socket.emit('createMessage', dto);
+            socket.emit('messages:create', createMessageDto);
           });
-          const dto = {
+          const connectToChatsDto = {
             chatIds: [chatId],
           };
-          socket.emit('connectToChats', dto);
+          socket.emit('chats:connect', connectToChatsDto);
         });
       });
 
@@ -953,13 +954,94 @@ describe('App e2e test', () => {
           transports: ['websocket'],
         });
         socket.once('connect', () => {
-          socket.once('exception', (error) => done());
+          socket.once('exception', (_) => done());
           const dto = {
             chatId,
             content: 'dummy',
           };
-          socket.emit('createMessage', dto);
+          socket.emit('messages:create', dto);
         });
+      });
+
+      it('should not create message when message content is empty', (done) => {
+        socket = io(SERVER_URL, {
+          auth: { token: ownerAccessToken },
+          transports: ['websocket'],
+        });
+        socket.once('connect', () => {
+          const invalidDto = {
+            chatId,
+            content: '',
+          };
+          socket.once('exception', (_) => done());
+          socket.emit('messages:create', invalidDto);
+        });
+      });
+    });
+
+    describe('messages:get', () => {
+      let messageContent = 'dummy';
+
+      beforeEach((done) => {
+        socket = io(SERVER_URL, {
+          auth: { token: ownerAccessToken },
+          transports: ['websocket'],
+        });
+        socket.once('connect', () => {
+          socket.once('chats:connect:success', () => {
+            socket.once('messages:new', () => done());
+            const createMessageDto = {
+              chatId,
+              content: messageContent,
+            };
+            socket.emit('messages:create', createMessageDto);
+          });
+          const connectToChatsDto = { chatIds: [chatId] };
+          socket.emit('chats:connect', connectToChatsDto);
+        });
+      });
+
+      it('should return chat messages', (done) => {
+        socket.once('messages:get:success', (messages) => {
+          try {
+            expect(Array.isArray(messages)).toBeTruthy();
+            expect(messages.length).toBe(1);
+            expect(messages[0].chatId).toBe(chatId);
+            expect(messages[0].content).toBe(messageContent);
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+        const getMessagesDto = { chatId, take: 1, skip: 0 };
+        socket.emit('messages:get', getMessagesDto);
+      });
+
+      it('should not return chat messages if user is not chat member', (done) => {
+        const userSocket = io(SERVER_URL, {
+          auth: { token: userAccessToken },
+          transports: ['websocket'],
+        });
+        userSocket.once('connect', () => {
+          userSocket.once('exception', (_) => {
+            try {
+              if (userSocket.connected) {
+                userSocket.disconnect();
+              }
+              done();
+            } catch (_) {
+              done();
+            }
+          });
+          const getMessagesDto = { chatId, take: 1, skip: 0 };
+          userSocket.emit('messages:get', getMessagesDto);
+        });
+      });
+
+      it('should return exception if chat id is invalid', (done) => {
+        socket.once('exception', (_) => done());
+        const getMessagesDto = { chatId: 'invalid', take: 1, skip: 0 };
+        socket.emit('messages:get', getMessagesDto);
       });
     });
   });

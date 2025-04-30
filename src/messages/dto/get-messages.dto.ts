@@ -1,15 +1,15 @@
 import { IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
 
-export class FindMessagesDto {
+export class GetMessagesDto {
   @IsNotEmpty()
   @IsUUID(4)
   chatId: string;
 
   @IsNotEmpty()
   @IsNumber()
-  limit: number;
+  take: number;
 
   @IsNotEmpty()
   @IsNumber()
-  offset: number;
+  skip: number;
 }

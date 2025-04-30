@@ -6,9 +6,9 @@ import {
   OnGatewayInit,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { ConnectToChatsDto, CreateMessageDto, MessageDto } from './dto';
+import { ConnectToChatsDto, CreateMessageDto, GetMessagesDto } from './dto';
 import { Server, Socket } from 'socket.io';
-import { SerializeOptions, UsePipes } from '@nestjs/common';
+import { UsePipes } from '@nestjs/common';
 import { User } from 'src/auth/decorators';
 import { WsValidationPipe } from './pipes';
 import { WsUser } from 'src/auth/decorators/ws-user.decorator';
@@ -18,7 +18,7 @@ import { MessagesFacade } from './messages.facade';
 @UsePipes(WsValidationPipe)
 export class MessagesGateway implements OnGatewayInit {
   @WebSocketServer()
-  server: Server;
+  private readonly server: Server;
 
   constructor(private readonly messagesFacade: MessagesFacade) {}
 
@@ -26,7 +26,7 @@ export class MessagesGateway implements OnGatewayInit {
     this.messagesFacade.initMiddlewares(server);
   }
 
-  @SubscribeMessage('connectToChats')
+  @SubscribeMessage('chats:connect')
   async connectToChats(
     @WsUser('id') userId: string,
     @MessageBody() dto: ConnectToChatsDto,
@@ -35,8 +35,7 @@ export class MessagesGateway implements OnGatewayInit {
     await this.messagesFacade.connectToChats(userId, dto, client);
   }
 
-  @SubscribeMessage('createMessage')
-  @SerializeOptions({ type: MessageDto })
+  @SubscribeMessage('messages:create')
   async createMessage(
     @User('id') senderId: string,
     @MessageBody() dto: CreateMessageDto,
@@ -44,18 +43,12 @@ export class MessagesGateway implements OnGatewayInit {
     await this.messagesFacade.createMessage(senderId, dto, this.server);
   }
 
-  // @SubscribeMessage('findMessages')
-  // @SerializeOptions({ type: MessageDto })
-  // async findMessages(
-  //   @MessageBody() dto: FindMessagesDto,
-  //   @ConnectedSocket() client: Socket,
-  // ): Promise<void> {
-  //   const messages = await this.messagesService.findMessages(dto);
-  //   const messagesDto = messages.map((message) =>
-  //     plainToInstance(MessageDto, message, {
-  //       excludeExtraneousValues: true,
-  //     }),
-  //   );
-  //   client.emit('loadMessages', messagesDto);
-  // }
+  @SubscribeMessage('messages:get')
+  async getMessages(
+    @WsUser('id') userId: string,
+    @MessageBody() dto: GetMessagesDto,
+    @ConnectedSocket() client: Socket,
+  ): Promise<void> {
+    await this.messagesFacade.getMessages(userId, dto, client);
+  }
 }
