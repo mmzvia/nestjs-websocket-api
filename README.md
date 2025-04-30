@@ -4,13 +4,6 @@
 
 Build a basic real-time messenger using WebSocket with the ability to communicate in separate chat rooms.
 
-Users should be able to:
-
-- Register and log in
-- Create chat rooms
-- Add other registered users to chats
-- Exchange messages in real-time
-
 ## 👣 Main User Scenarios
 
 **New User Flow**
