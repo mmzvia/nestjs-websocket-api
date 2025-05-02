@@ -2,27 +2,33 @@
 
 ## Goal
 
-Build a basic real-time messenger API using WebSocket with the ability to communicate in separate chat rooms.
+Build a basic real-time messenger API with the ability to communicate in separate chat rooms.
 
-## Main User Scenarios
+## Main Scenarios
 
-**New User Flow**
+**New User**
 
 1. Register
-2. Create a chat
-3. Fetch all users
-4. Add selected users to the chat
+2. Login
+3. Create a chat
+4. Fetch all users
+5. Add selected users to the chat
 
-**Join & Message Flow**
+**Join & Message**
 
 1. Fetch available chats
-2. Connect to a chat
+2. Connect to specified chats
 3. Start messaging
 
-**Chat Management Flow**
+**Chat Management**
 
 1. View users in a chat
 2. Remove specific users from the chat
+
+**Leave Chat**
+
+1. Fetch available chats
+2. Leave specified chats
 
 ## Roadmap
 
