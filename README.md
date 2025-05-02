@@ -4,32 +4,6 @@
 
 Build a basic real-time messenger API with the ability to communicate in separate chat rooms.
 
-## Main Scenarios
-
-**New User**
-
-1. Register
-2. Login
-3. Create a chat
-4. Fetch all users
-5. Add selected users to the chat
-
-**Join & Message**
-
-1. Fetch available chats
-2. Connect to specified chats
-3. Start messaging
-
-**Chat Management**
-
-1. View users in a chat
-2. Remove specific users from the chat
-
-**Leave Chat**
-
-1. Fetch available chats
-2. Leave specified chats
-
 ## Roadmap
 
 | Task                                                                   | Status |
@@ -42,6 +16,32 @@ Build a basic real-time messenger API with the ability to communicate in separat
 | Implement user management                                              | DONE   |
 | Implement chat management                                              | DONE   |
 | Implement messaging functionality                                      | DONE   |
+
+## Use Cases
+
+**Register & Create Chat**
+
+1. Register
+2. Login
+3. Create a chat
+4. Fetch all users
+5. Add selected users to the chat
+
+**Join Chat & Message**
+
+1. Fetch available chats
+2. Connect to specified chat
+3. Start messaging
+
+**Manage Chat**
+
+1. View users in a chat
+2. Remove specific users from the chat
+
+**Leave Chat**
+
+1. Fetch available chats
+2. Leave specified chat
 
 ## Project Modules
 
