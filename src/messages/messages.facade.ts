@@ -1,12 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { ChatsService } from 'src/chats/chats.service';
-import {
-  ConnectToChatsDto,
-  CreateMessageDto,
-  GetMessagesDto,
-  MessageDto,
-} from './dto';
+import { ChatsDto, CreateMessageDto, GetMessagesDto, MessageDto } from './dto';
 import { plainToInstance } from 'class-transformer';
 import { WsException } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -15,6 +10,9 @@ import { Message } from '@prisma/client';
 
 @Injectable()
 export class MessagesFacade {
+  private readonly DEFAULT_WS_EXCEPTION_MESSAGE: string =
+    'Something went wrong';
+
   constructor(
     private readonly wsJwtAuthMiddleware: WsJwtAuthMiddleware,
     private readonly chatsService: ChatsService,
@@ -25,7 +23,11 @@ export class MessagesFacade {
     server.use((socket, next) => this.wsJwtAuthMiddleware.use(socket, next));
   }
 
-  async connectToChats(userId: string, dto: ConnectToChatsDto, client: Socket) {
+  async connectToChats(
+    userId: string,
+    dto: ChatsDto,
+    client: Socket,
+  ): Promise<void> {
     try {
       const { chatIds } = dto;
       const isMember = await this.chatsService.isChatsMember(userId, chatIds);
@@ -34,8 +36,22 @@ export class MessagesFacade {
       }
       chatIds.forEach((id) => client.join(id));
       client.emit('chats:connect:success');
-    } catch (error) {
-      throw new WsException('Something went wrong');
+    } catch (_) {
+      throw new WsException(this.DEFAULT_WS_EXCEPTION_MESSAGE);
+    }
+  }
+
+  async disconnectFromChats(dto: ChatsDto, client: Socket): Promise<void> {
+    try {
+      const { chatIds } = dto;
+      chatIds.forEach((id) => {
+        if (client.rooms.has(id)) {
+          client.leave(id);
+        }
+      });
+      client.emit('chats:disconnect:success');
+    } catch (_) {
+      throw new WsException(this.DEFAULT_WS_EXCEPTION_MESSAGE);
     }
   }
 
@@ -55,8 +71,8 @@ export class MessagesFacade {
       const message = await this.messagesService.createMessage(senderId, dto);
       const messageDto = this.messageToDto(message);
       server.to(chatId).emit('messages:new', messageDto);
-    } catch (error) {
-      throw new WsException('Something went wrong');
+    } catch (_) {
+      throw new WsException(this.DEFAULT_WS_EXCEPTION_MESSAGE);
     }
   }
 
@@ -76,7 +92,7 @@ export class MessagesFacade {
       const messagesDto = this.messagesToDtos(messages);
       client.emit('messages:get:success', messagesDto);
     } catch (error) {
-      throw new WsException('Something went wrong');
+      throw new WsException(this.DEFAULT_WS_EXCEPTION_MESSAGE);
     }
   }
 

@@ -6,7 +6,7 @@ import {
   OnGatewayInit,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { ConnectToChatsDto, CreateMessageDto, GetMessagesDto } from './dto';
+import { ChatsDto, CreateMessageDto, GetMessagesDto } from './dto';
 import { Server, Socket } from 'socket.io';
 import { UsePipes } from '@nestjs/common';
 import { User } from 'src/auth/decorators';
@@ -29,10 +29,18 @@ export class MessagesGateway implements OnGatewayInit {
   @SubscribeMessage('chats:connect')
   async connectToChats(
     @WsUser('id') userId: string,
-    @MessageBody() dto: ConnectToChatsDto,
+    @MessageBody() dto: ChatsDto,
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     await this.messagesFacade.connectToChats(userId, dto, client);
+  }
+
+  @SubscribeMessage('chats:disconnect')
+  async disconnectFromChats(
+    @MessageBody() dto: ChatsDto,
+    @ConnectedSocket() client: Socket,
+  ): Promise<void> {
+    await this.messagesFacade.disconnectFromChats(dto, client);
   }
 
   @SubscribeMessage('messages:create')
