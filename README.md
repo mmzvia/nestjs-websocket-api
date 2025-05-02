@@ -1,10 +1,10 @@
-# 📡 Simple Messenger
+# Simple Messenger
 
-## 🎯 Goal
+## Goal
 
 Build a basic real-time messenger using WebSocket with the ability to communicate in separate chat rooms.
 
-## 👣 Main User Scenarios
+## Main User Scenarios
 
 **New User Flow**
 
@@ -24,33 +24,33 @@ Build a basic real-time messenger using WebSocket with the ability to communicat
 1. View users in a chat
 2. Remove specific users from the chat
 
-## 🛣️ Roadmap
+## Roadmap
 
-| Task                                                                   | Status     |
-| ---------------------------------------------------------------------- | ---------- |
-| Design project structure                                               | ✅ DONE    |
-| Design database schema                                                 | ✅ DONE    |
-| Initialize project (including `docker-compose.yaml` and setup scripts) | ✅ DONE    |
-| Initialize Prisma ORM                                                  | ✅ DONE    |
-| Implement user registration & authentication                           | ✅ DONE    |
-| Implement user management                                              | ✅ DONE    |
-| Implement chat management                                              | ✅ DONE    |
-| Implement messaging functionality                                      | ✅ DONE    |
-| “{user} is typing” indicator                                           | 🔧 PLANNED |
-| User status indicator                                                  | 🔧 PLANNED |
+| Task                                                                   | Status  |
+| ---------------------------------------------------------------------- | ------- |
+| Design project structure                                               | DONE    |
+| Design database schema                                                 | DONE    |
+| Initialize project (including `docker-compose.yaml` and setup scripts) | DONE    |
+| Initialize Prisma ORM                                                  | DONE    |
+| Implement user registration & authentication                           | DONE    |
+| Implement user management                                              | DONE    |
+| Implement chat management                                              | DONE    |
+| Implement messaging functionality                                      | DONE    |
+| “{user} is typing” indicator                                           | PLANNED |
+| User status indicator                                                  | PLANNED |
 
-## 🧩 Project Modules
+## Project Modules
 
-### 🔐 Authorization
+### Authorization
 
 - User registration
 - User login
 
-### 👥 Users
+### Users
 
 - Fetch all registered users
 
-### 💬 Chats
+### Chats
 
 - Create a new chat
 - Add users to a chat
@@ -60,13 +60,14 @@ Build a basic real-time messenger using WebSocket with the ability to communicat
 - Remove users from a chat
 - Leave a chat
 
-### ✉️ Messages
+### Messages
 
-- Connect to a chat room
+- Connect to chat rooms
+- Disconnect from chat rooms
 - Send messages to a chat
 - Receive messages in real-time
 
-## 🗃️ Draft Database Schema
+## Draft Database Schema
 
 ### User
 
@@ -100,3 +101,32 @@ Build a basic real-time messenger using WebSocket with the ability to communicat
 | chat_id   | UUID / INT REFERENCES Chat(id) |             |
 | sender_id | UUID / INT REFERENCES User(id) |             |
 | content   | TEXT Message body              |             |
+
+## Scripts
+
+### Project setup
+
+```bash
+$ npm install
+```
+
+### Compile and run the project
+
+```bash
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
+```
+
+### Run tests
+
+```bash
+
+# e2e tests
+$ npm run test:e2e
+```
