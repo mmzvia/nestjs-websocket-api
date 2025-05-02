@@ -95,10 +95,10 @@ Build a basic real-time messenger API using WebSocket with the ability to commun
 
 | Field     | Type                           | Description |
 | --------- | ------------------------------ | ----------- |
-| id        | UUID / INT PRIMARY KEY         |             |
-| chat_id   | UUID / INT REFERENCES Chat(id) |             |
-| sender_id | UUID / INT REFERENCES User(id) |             |
-| content   | TEXT Message body              |             |
+| id        | UUID / INT PRIMARY KEY         | -           |
+| chat_id   | UUID / INT REFERENCES Chat(id) | -           |
+| sender_id | UUID / INT REFERENCES User(id) | -           |
+| content   | TEXT Message body              | -           |
 
 ## Scripts
 
