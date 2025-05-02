@@ -7,6 +7,7 @@ import {
   ValidationPipeOptions,
 } from '@nestjs/common';
 import { useContainer } from 'class-validator';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +26,8 @@ async function bootstrap() {
   };
   const csi = new ClassSerializerInterceptor(reflector, csiOptions);
   app.useGlobalInterceptors(csi);
+
+  app.use(helmet());
 
   await app.listen(process.env.PORT ?? 3000);
 }

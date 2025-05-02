@@ -14,6 +14,7 @@ import { Reflector } from '@nestjs/core';
 import { useContainer } from 'class-validator';
 import { randomUUID } from 'crypto';
 import { Socket, io } from 'socket.io-client';
+import helmet from 'helmet';
 
 describe('App e2e test', () => {
   const SERVER_URL = 'http://localhost:3333';
@@ -43,6 +44,8 @@ describe('App e2e test', () => {
     };
     const csi = new ClassSerializerInterceptor(reflector, csiOptions);
     app.useGlobalInterceptors(csi);
+
+    app.use(helmet());
 
     prismaService = app.get(PrismaService);
 
