@@ -26,18 +26,16 @@ Build a basic real-time messenger API using WebSocket with the ability to commun
 
 ## Roadmap
 
-| Task                                                                   | Status  |
-| ---------------------------------------------------------------------- | ------- |
-| Design project structure                                               | DONE    |
-| Design database schema                                                 | DONE    |
-| Initialize project (including `docker-compose.yaml` and setup scripts) | DONE    |
-| Initialize Prisma ORM                                                  | DONE    |
-| Implement user registration & authentication                           | DONE    |
-| Implement user management                                              | DONE    |
-| Implement chat management                                              | DONE    |
-| Implement messaging functionality                                      | DONE    |
-| “{user} is typing” indicator                                           | PLANNED |
-| User status indicator                                                  | PLANNED |
+| Task                                                                   | Status |
+| ---------------------------------------------------------------------- | ------ |
+| Design project structure                                               | DONE   |
+| Design database schema                                                 | DONE   |
+| Initialize project (including `docker-compose.yaml` and setup scripts) | DONE   |
+| Initialize Prisma ORM                                                  | DONE   |
+| Implement user registration & authentication                           | DONE   |
+| Implement user management                                              | DONE   |
+| Implement chat management                                              | DONE   |
+| Implement messaging functionality                                      | DONE   |
 
 ## Project Modules
 
