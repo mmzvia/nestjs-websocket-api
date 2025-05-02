@@ -1,8 +1,8 @@
-# Simple Messenger
+# Techincal Specification
 
 ## Goal
 
-Build a basic real-time messenger using WebSocket with the ability to communicate in separate chat rooms.
+Build a basic real-time messenger API using WebSocket with the ability to communicate in separate chat rooms.
 
 ## Main User Scenarios
 
@@ -104,29 +104,13 @@ Build a basic real-time messenger using WebSocket with the ability to communicat
 
 ## Scripts
 
-### Project setup
-
 ```bash
+# Project setup.
 $ npm install
-```
 
-### Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-### Run tests
-
-```bash
-
-# e2e tests
+# Run e2e tests.
 $ npm run test:e2e
+
+# Compile and run the project.
+$ npm run start
 ```
