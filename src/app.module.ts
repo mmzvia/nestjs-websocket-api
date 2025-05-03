@@ -3,7 +3,6 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
-import { ChatsController } from './chats/chats.controller';
 import { ChatsService } from './chats/chats.service';
 import { ChatsModule } from './chats/chats.module';
 import { MessagesModule } from './messages/messages.module';
@@ -17,7 +16,6 @@ import { MessagesModule } from './messages/messages.module';
     ChatsModule,
     MessagesModule,
   ],
-  controllers: [ChatsController],
   providers: [ChatsService],
 })
 export class AppModule {}
