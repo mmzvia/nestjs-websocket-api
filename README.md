@@ -1,20 +1,21 @@
-# Techincal Specification
+# Nest.js WebSocket API
 
 ## Goal
 
-Build a basic real-time messenger API with the ability to communicate in separate chat rooms.
+A basic real-time messenger API with the ability to communicate in separate chat rooms.
 
-## Roadmap
+## Scripts
 
-| Task                                                                   | Status |
-| ---------------------------------------------------------------------- | ------ |
-| Design project structure                                               | DONE   |
-| Design database schema                                                 | DONE   |
-| Initialize project (including `docker-compose.yaml` and setup scripts) | DONE   |
-| Implement auth endpoints                                               | DONE   |
-| Implement user endpoints                                               | DONE   |
-| Implement chat endpoints                                               | DONE   |
-| Implement message endpoints                                            | DONE   |
+```bash
+# Project setup.
+$ npm install
+
+# Run e2e tests.
+$ npm run test:e2e
+
+# Run the development server.
+$ npm run start
+```
 
 ## Use Cases
 
@@ -108,16 +109,3 @@ Build a basic real-time messenger API with the ability to communicate in separat
 | sender_id  | UUID / INT REFERENCES User(id) NOT NULL     | -           |
 | content    | TEXT Message body NOT NULL                  | -           |
 | created_at | DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL | -           |
-
-## Scripts
-
-```bash
-# Project setup.
-$ npm install
-
-# Run e2e tests.
-$ npm run test:e2e
-
-# Run the development server.
-$ npm run start
-```
