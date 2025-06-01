@@ -17,7 +17,7 @@ $ npm run test:e2e
 $ npm run start
 ```
 
-## Use Cases
+## Scenarios
 
 **Register & Create Chat**
 
