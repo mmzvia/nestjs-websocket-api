@@ -43,7 +43,7 @@ $ npm run start
 1. Fetch available chats.
 2. Leave specified chat.
 
-## Project Modules
+## Modules
 
 ### Authorization
 
