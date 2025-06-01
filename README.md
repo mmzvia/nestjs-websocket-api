@@ -1,6 +1,6 @@
 # Nest.js WebSocket API
 
-## Goal
+## Description
 
 A basic real-time messenger API with the ability to communicate in separate chat rooms.
 
