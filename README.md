@@ -1,72 +1,64 @@
-# Nest.js WebSocket API
+# Messenger API
 
-## Description
+A simple real-time messenger API that enables communication in separate chat rooms.  
 
-A basic real-time messenger API with the ability to communicate in separate chat rooms.
+⚠️ **Disclaimer**: This project is intended as a **learning/demo application** and is **not production-ready**. For production use, significant refactoring, optimization, and security hardening would be required.
 
-## Scripts
+## Features
 
+### 🔐 Authorization
+- User registration
+- User login
+
+### 👥 Users
+- Fetch all registered users
+
+### 💬 Chats
+- Create a new chat
+- Add users to a chat
+- List available chats
+- View users in a chat
+- Remove users from a chat
+- Leave a chat
+- Delete a chat
+
+### ✉️ Messages
+- Connect/disconnect from chat rooms
+- Send messages to a chat
+- Receive messages in real time
+
+## Example Scenarios
+
+### Register & Create a Chat
+1. Register a new user  
+2. Log in  
+3. Create a chat  
+4. Fetch all users  
+5. Add selected users to the chat  
+
+### Join Chat & Start Messaging
+1. Fetch available chats  
+2. Connect to a specified chat  
+3. Send and receive messages in real time  
+
+### Manage Chat
+1. View users in a chat  
+2. Remove specific users  
+
+### Leave Chat
+1. Fetch available chats  
+2. Leave a specified chat  
+
+## Getting Started
+
+### Installation
 ```bash
-# Project setup.
-$ npm install
+# Install dependencies
+npm install
 
-# Run e2e tests.
+# Run end-to-end tests
 $ npm run test:e2e
 
-# Run the development server.
+# Run the development server
 $ npm run start
 ```
-
-## Scenarios
-
-**Register & Create Chat**
-
-1. Register.
-2. Login.
-3. Create a chat.
-4. Fetch all users.
-5. Add selected users to the chat.
-
-**Join Chat & Message**
-
-1. Fetch available chats.
-2. Connect to specified chat.
-3. Start messaging.
-
-**Manage Chat**
-
-1. View users in a chat.
-2. Remove specific users from the chat.
-
-**Leave Chat**
-
-1. Fetch available chats.
-2. Leave specified chat.
-
-## Modules
-
-### Authorization
-
-- User registration.
-- User login.
-
-### Users
-
-- Fetch all registered users.
-
-### Chats
-
-- Create a new chat.
-- Add users to a chat.
-- List available chats.
-- List users in a specific chat.
-- Delete a chat.
-- Remove users from a chat.
-- Leave a chat.
-
-### Messages
-
-- Connect to chat rooms.
-- Disconnect from chat rooms.
-- Send messages to a chat.
-- Receive messages in real-time.
