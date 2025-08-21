@@ -51,7 +51,6 @@ A simple real-time messenger API that enables communication in separate chat roo
 
 ## Getting Started
 
-### Installation
 ```bash
 # Install dependencies
 npm install
