@@ -6,7 +6,7 @@ A simple real-time messenger API that enables communication in separate chat roo
 
 ## Features
 
-### 🔐 Authorization
+### 🔐 Auth
 - User registration
 - User login
 
